@@ -1,0 +1,18 @@
+
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  sumar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sumar dos números
+        id: calculo
+        run: |
+          num1=5
+          num2=10
+          resultado=$((num1 + num2))
+          echo "El resultado de $num1 + $num2 es: $resultado"
+          echo "suma=$resultado" >> $GITHUB_OUTPUT
