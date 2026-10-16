@@ -10,25 +10,41 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
+# ------------------------------------------------------------------
+# SECURITY
+# En local usa valores por defecto.
+# En producción (Render) toma las variables de entorno.
+# ------------------------------------------------------------------
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-a+0ou1^g#t__o_@qxz3!)bbm9736vwmdayx8e99i^hp$v@=7m2'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-a+0ou1^g#t__o_@qxz3!)bbm9736vwmdayx8e99i^hp$v@=7m2'
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# En local: DEBUG=True. En Render se sobreescribe con DEBUG=False.
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1'
+).split(',')
+
+# Render agrega automáticamente el hostname del servicio
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
-# Application definition
+# ------------------------------------------------------------------
+# APPLICATIONS
+# ------------------------------------------------------------------
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -42,7 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -71,8 +87,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.1/ref/settings/#databases
+# ------------------------------------------------------------------
+# DATABASE
+# ------------------------------------------------------------------
 
 DATABASES = {
     'default': {
@@ -82,8 +99,9 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
+# ------------------------------------------------------------------
+# PASSWORD VALIDATION
+# ------------------------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -101,29 +119,58 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.1/topics/i18n/
+# ------------------------------------------------------------------
+# INTERNATIONALIZATION
+# ------------------------------------------------------------------
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-co'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.1/howto/static-files/
+# ------------------------------------------------------------------
+# STATIC FILES (WhiteNoise)
+# ------------------------------------------------------------------
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 
-# Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+# ------------------------------------------------------------------
+# DEFAULT PRIMARY KEY
+# ------------------------------------------------------------------
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ------------------------------------------------------------------
+# EMAIL
+# ------------------------------------------------------------------
 
 MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+
+# ------------------------------------------------------------------
+# CSRF TRUSTED ORIGINS (para Render)
+# ------------------------------------------------------------------
+
+CSRF_TRUSTED_ORIGINS = []
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
