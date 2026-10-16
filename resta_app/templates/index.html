@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Django</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 24px;
+  }
+  .motor {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border: 1px solid #2ea043;
+    background: #0f2417;
+    color: #3fb950;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  h1 {
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 12px;
+    color: #58a6ff;
+  }
+  .sub {
+    text-align: center;
+    color: #8b949e;
+    margin-bottom: 24px;
+    font-size: 15px;
+  }
+  .btn-menu {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    margin-bottom: 12px;
+    background: #1f2630;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    color: #e6edf3;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .btn-menu:hover {
+    background: #262d38;
+    border-color: #58a6ff;
+    transform: translateY(-2px);
+  }
+  .btn-volver {
+    display: inline-block;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    color: #8b949e;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  .btn-volver:hover { color: #e6edf3; border-color: #58a6ff; }
+  .titulo-calc {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #a371f7;
+    margin-bottom: 24px;
+  }
+  .titulo-calc.suma { color: #3fb950; }
+  .inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  input {
+    width: 100%;
+    padding: 14px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    color: #e6edf3;
+    font-size: 16px;
+    text-align: center;
+  }
+  input:focus { outline: none; border-color: #58a6ff; }
+  .btn-calcular {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  .btn-calcular.suma { background: #238636; }
+  .btn-calcular.suma:hover { background: #2ea043; }
+  .btn-calcular.resta { background: #8957e5; }
+  .btn-calcular.resta:hover { background: #a371f7; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  th, td {
+    padding: 14px;
+    text-align: center;
+    border: 1px solid #30363d;
+  }
+  th {
+    background: #1f2630;
+    color: #58a6ff;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  td {
+    background: #0d1117;
+    color: #e6edf3;
+    font-size: 16px;
+    min-height: 40px;
+  }
+  .seccion { display: none; }
+  .seccion.activa { display: block; }
+</style>
+</head>
+<body>
+
+  <div class="motor">⚡ Motor Django v{{ django_version }}</div>
+
+  {% csrf_token %}
+
+  <!-- MENÚ PRINCIPAL -->
+  <div id="menu" class="card seccion activa">
+    <h1>📌 Menú Principal</h1>
+    <p class="sub">Selecciona la operación que deseas realizar:</p>
+    <button class="btn-menu" data-ir="suma">➕ Operación Suma</button>
+    <button class="btn-menu" data-ir="resta">➖ Operación Resta</button>
+  </div>
+
+  <!-- CALCULADORA SUMA -->
+  <div id="suma" class="card seccion">
+    <button class="btn-volver" data-ir="menu">← Volver al Menú</button>
+    <h2 class="titulo-calc suma">🧮 Calculadora de Suma</h2>
+    <div class="inputs">
+      <input type="number" id="suma-num1" placeholder="Número 1">
+      <input type="number" id="suma-num2" placeholder="Número 2">
+    </div>
+    <button class="btn-calcular suma" data-op="suma">Calcular Suma 🔥</button>
+    <table>
+      <thead>
+        <tr><th>Número 1</th><th>Número 2</th><th>Resultado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td id="suma-r1">-</td><td id="suma-r2">-</td><td id="suma-r3">-</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CALCULADORA RESTA -->
+  <div id="resta" class="card seccion">
+    <button class="btn-volver" data-ir="menu">← Volver al Menú</button>
+    <h2 class="titulo-calc">➖ Calculadora de Resta</h2>
+    <div class="inputs">
+      <input type="number" id="resta-num1" placeholder="Número 1">
+      <input type="number" id="resta-num2" placeholder="Número 2">
+    </div>
+    <button class="btn-calcular resta" data-op="resta">Calcular Resta ❄️</button>
+    <table>
+      <thead>
+        <tr><th>Número 1</th><th>Número 2</th><th>Resultado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td id="resta-r1">-</td><td id="resta-r2">-</td><td id="resta-r3">-</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+<script>
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+
+  function mostrarSeccion(id) {
+    document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
+    document.getElementById(id).classList.add('activa');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Navegación
+    document.querySelectorAll('[data-ir]').forEach(btn => {
+      btn.addEventListener('click', () => mostrarSeccion(btn.dataset.ir));
+    });
+
+    // Botones calcular
+    document.querySelectorAll('.btn-calcular').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const op = btn.dataset.op;
+        const n1 = document.getElementById(`${op}-num1`).value;
+        const n2 = document.getElementById(`${op}-num2`).value;
+
+        const fd = new FormData();
+        fd.append('num1', n1);
+        fd.append('num2', n2);
+        fd.append('operacion', op);
+
+        try {
+          const res = await fetch('/api/calcular/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') },
+            body: fd,
+          });
+          const data = await res.json();
+          if (data.error) {
+            alert('⚠️ ' + data.error);
+            return;
+          }
+          document.getElementById(`${op}-r1`).textContent = data.num1;
+          document.getElementById(`${op}-r2`).textContent = data.num2;
+          document.getElementById(`${op}-r3`).textContent = data.resultado;
+        } catch (e) {
+          alert('⚠️ Error de conexión');
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>
